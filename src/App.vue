@@ -1,20 +1,18 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div id="app">    <!-- Gebruik van het BoardComponent -->
+    <BoardComponent/>
+  </div>
 </template>
-
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
+import BoardComponent from './components/BoardComponent.vue';
 export default {
   name: 'App',
   components: {
-    HelloWorld
-  }
-}
+    BoardComponent,
+  },
+};
 </script>
-
-<style>
+<style>/* Basis styling voor de applicatie */
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -24,3 +22,4 @@ export default {
   margin-top: 60px;
 }
 </style>
+
