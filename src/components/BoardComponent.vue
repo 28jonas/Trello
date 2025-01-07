@@ -3,7 +3,7 @@
     <!-- Titel -->
     <h1 class="text-2xl font-bold mb-4">Mijn Borden</h1>
     <!-- Container voor borden -->
-    <div >
+    <div>
       <!-- Een individueel bord -->
       <draggable
           v-model="sortedBoards"
@@ -46,6 +46,25 @@
             <p v-if="element.error" class="text-red-500 text-sm mt-1">
               {{ element.error }}
             </p>
+
+            <div class="mt-2">
+              <button
+                  class="text-blue-500 hover:text-blue-700"
+                  @click="toggleDescriptionEdit(element.id)">
+                Beschrijving toevoegen/bewerken
+              </button>
+              <div v-if="editingDescription === element.id">
+                <textarea
+                  class="border rounded w-full mt-2 p-2"
+                  v-model="element.description"
+                  @blur="updateDescription(element.id, element.description)"
+                  placeholder="Voeg een beschrijving toe..."
+                ></textarea>
+              </div>
+              <p v-else-if="element.description" class="text-gray-600 mt-2">
+                {{ element.description }}
+              </p>
+            </div>
 
             <!-- Dropdown-menu -->
             <div
@@ -195,6 +214,18 @@ export default {
       boardStore.toggleFavorite(boardId)
     }
 
+    /*Desription of cards*/
+    const editingDescription = ref(null);
+
+    const toggleDescriptionEdit = (boardId) => {
+      editingDescription.value = editingDescription.value === boardId ? null : boardId;
+    };
+
+    const updateDescription = (boardId, newDescription) => {
+      boardStore.updateBoardDescription(boardId, newDescription);
+      editingDescription.value = null; // Sluit het invoerveld
+    };
+
     return {
       boardStore,
       listStore,
@@ -215,11 +246,16 @@ export default {
       drag,
 
       /*favorite*/
-      toggleFavorite
+      toggleFavorite,
+
+      /*description*/
+      editingDescription,
+      toggleDescriptionEdit,
+      updateDescription
     };
   },
-  methods:{
-    onDragEnd(){
+  methods: {
+    onDragEnd() {
       this.boardStore.reorderBoards(this.boardStore.boards)
     }
   },
@@ -239,7 +275,7 @@ export default {
         this.boardStore.updateBoards(value);
       }
     }
-},
+  },
 };
 </script>
 <style scoped>

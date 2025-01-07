@@ -16,7 +16,7 @@ export const useBoardStore = defineStore('boardStore', {
             lastBoard: storedLastBoard,
             boards: storedBoards.length
                 ? storedBoards
-                : [{ id: 0, title: 'Eerste Bord', valid: true, error: '', isFavorite: false }],
+                : [{ id: 0, title: 'Eerste Bord', valid: true, error: '', isFavorite: false, description:"" }],
             dropdownOpen: null,
         };
 
@@ -24,7 +24,7 @@ export const useBoardStore = defineStore('boardStore', {
     actions: {
         addBoard() {
             this.lastBoard++;
-            this.boards.push({ id: this.lastBoard, title: '', valid: true, error: '', isFavorite: false });
+            this.boards.push({ id: this.lastBoard, title: '', valid: true, error: '', isFavorite: false, description: "" });
             this.saveBoards();
         },
         deleteBoard(boardId) {
@@ -68,6 +68,13 @@ export const useBoardStore = defineStore('boardStore', {
         updateBoards(newBoards) {
             this.boards = newBoards;
             localStorage.setItem('boards', JSON.stringify(newBoards));
-        }
+        },
+        updateBoardDescription(boardId, newDescription) {
+            const board = this.boards.find((board) => board.id === boardId);
+            if (board) {
+                board.description = newDescription.trim();
+                this.saveBoards();
+            }
+        },
     },
 });
