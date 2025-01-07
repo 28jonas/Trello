@@ -6,12 +6,12 @@
     <div >
       <!-- Een individueel bord -->
       <draggable
-        v-model="boardStore.boards"
-        group="element"
-        @start="drag=true"
-        @end="drag=false"
-        item-key="id"
-        class="grid grid-cols-3 gap-4"
+          v-model="sortedBoards"
+          group="element"
+          @start="drag=true"
+          @end="onDragEnd"
+          item-key="id"
+          class="grid grid-cols-3 gap-4"
       >
         <template #item="{element}">
           <div
@@ -26,11 +26,14 @@
                   :class="{'border-red-500': !element.valid}"
                   :value="element.title"
                   placeholder="Voer een titel in..."
-                  :ref="index === boardStore.boards.length - 1 ? 'lastInput' : null"
                   @focus="$nextTick(() => $event.target.select())"
                   @input="updateTitle(element.id, $event.target.value)"
                   @keydown.enter="leaveInput($event)"
               />
+              <button @click="toggleFavorite(element.id)">
+                <span v-if="element.isFavorite">⭐</span>
+                <span v-else>☆</span>
+              </button>
               <!-- Dropdown-menu knop -->
               <button
                   class="text-gray-500 hover:text-gray-700 ml-2"
@@ -111,7 +114,6 @@
     >
       + Nieuw Bord
     </button>
-
   </div>
 </template>
 <script>
@@ -186,7 +188,12 @@ export default {
     };
 
     /*Draggable*/
-    const drag = ref(false)
+    const drag = ref(false);
+
+    /*Favorite*/
+    function toggleFavorite(boardId) {
+      boardStore.toggleFavorite(boardId)
+    }
 
     return {
       boardStore,
@@ -207,8 +214,32 @@ export default {
       /*drag and drop*/
       drag,
 
+      /*favorite*/
+      toggleFavorite
     };
   },
+  methods:{
+    onDragEnd(){
+      this.boardStore.reorderBoards(this.boardStore.boards)
+    }
+  },
+  computed: {
+    sortedBoards: {
+      get() {
+        if (!this.boardStore.boards || !Array.isArray(this.boardStore.boards)) {
+          return [];
+        }
+        return [...this.boardStore.boards].sort((a, b) => {
+          if (a.isFavorite && !b.isFavorite) return -1;
+          if (!a.isFavorite && b.isFavorite) return 1;
+          return 0;
+        });
+      },
+      set(value) {
+        this.boardStore.updateBoards(value);
+      }
+    }
+},
 };
 </script>
 <style scoped>

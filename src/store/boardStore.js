@@ -1,19 +1,35 @@
 import { defineStore } from 'pinia';
+
 export const useBoardStore = defineStore('boardStore', {
-    state: () => ({
-        lastBoard: 0,
-        boards: [
-            { id: 0, title: 'Eerste Bord', valid: true, error: '' },
-        ],
-        dropdownOpen: null, // Houdt bij welk bord de dropdown open heeft
-    }),
+    state: () => {
+        let storedLastBoard = 0;
+        let storedBoards = [];
+
+        try {
+            storedBoards = JSON.parse(localStorage.getItem('boards')) || [];
+            storedLastBoard = parseInt(localStorage.getItem('lastBoard')) || 0;
+        } catch (error) {
+            console.error('Fout bij het parsen van boards uit localStorage:', error);
+        }
+
+        return {
+            lastBoard: storedLastBoard,
+            boards: storedBoards.length
+                ? storedBoards
+                : [{ id: 0, title: 'Eerste Bord', valid: true, error: '', isFavorite: false }],
+            dropdownOpen: null,
+        };
+
+    },
     actions: {
         addBoard() {
-            const newId = ++ this.lastBoard ;
-            this.boards.push({ id: newId, title: '', valid: true, error: '' }); // Nieuw bord met lege titel
+            this.lastBoard++;
+            this.boards.push({ id: this.lastBoard, title: '', valid: true, error: '', isFavorite: false });
+            this.saveBoards();
         },
         deleteBoard(boardId) {
             this.boards = this.boards.filter((board) => board.id !== boardId);
+            this.saveBoards();
         },
         updateBoardTitle(boardId, newTitle) {
             const board = this.boards.find((board) => board.id === boardId);
@@ -21,15 +37,37 @@ export const useBoardStore = defineStore('boardStore', {
                 board.title = newTitle.trim();
                 board.valid = this.validateTitle(newTitle);
                 board.error = board.valid ? '' : 'Titel mag niet leeg zijn.';
+                this.saveBoards();
             }
         },
         toggleDropdown(boardId) {
-            this.dropdownOpen = this.dropdownOpen === boardId ? null :
-                boardId;
+            this.dropdownOpen = this.dropdownOpen === boardId ? null : boardId;
+        },
+        toggleFavorite(boardId) {
+            const board = this.boards.find((board) => board.id === boardId);
+            if (board) {
+                board.isFavorite = !board.isFavorite;
+                this.saveBoards();
+            }
+        },
+        reorderBoards(newOrder) {
+            this.boards = newOrder;
+            this.saveBoards();
         },
         validateTitle(title) {
-            // Titel moet minimaal 1 teken bevatten
             return title.trim().length > 0;
         },
+        saveBoards() {
+            try {
+                localStorage.setItem('boards', JSON.stringify(this.boards));
+                localStorage.setItem('lastBoard', this.lastBoard.toString());
+            } catch (error) {
+                console.error('Fout bij het opslaan van data naar localStorage:', error);
+            }
+        },
+        updateBoards(newBoards) {
+            this.boards = newBoards;
+            localStorage.setItem('boards', JSON.stringify(newBoards));
+        }
     },
 });
